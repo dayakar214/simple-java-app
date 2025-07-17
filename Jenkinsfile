@@ -2,25 +2,35 @@ pipeline {
     agent none
 
     stages {
-        stage('Clone') {
+        stage('Build on Dev') {
             agent { label 'dev' }
-            steps {
-                git 'https://github.com/spring-projects/spring-petclinic'
+            stages {
+                stage('Clone Repository') {
+                    steps {
+                        git url: 'https://github.com/dayakar214/simple-java-app.git', branch: 'main'
+                    }
+                }
+                stage('Build') {
+                    steps {
+                        sh 'mvn clean package'
+                    }
+                }
             }
         }
 
-        stage('Build') {
-            agent { label 'dev' }
+        stage('Test on Prod') {
+            agent { label 'prod' }
             steps {
-                sh 'mvn clean install'
+                echo 'Running tests on prod agent...'
+                // You can run test commands here if needed
             }
         }
 
         stage('Deploy') {
-            agent { label 'prod' }
+            agent any
             steps {
-                echo 'Deploying to prod server...'
-                // you can run scp, ssh, or other deploy logic here
+                echo 'Deploying the application...'
+                sh 'mkdir -p /tmp/deploy && cp target/*.jar /tmp/deploy/'
             }
         }
     }
