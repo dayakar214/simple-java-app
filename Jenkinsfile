@@ -1,9 +1,8 @@
 pipeline {
-    agent none
+    agent any
 
     stages {
-        stage('Build on Dev') {
-            agent { label 'dev' }
+        stage('Clone and Build') {
             stages {
                 stage('Clone Repository') {
                     steps {
@@ -18,19 +17,28 @@ pipeline {
             }
         }
 
-        stage('Test on Prod') {
-            agent { label 'prod' }
-            steps {
-                echo 'Running tests on prod agent...'
-                // You can run test commands here if needed
+        stage('Parallel Testing') {
+            parallel {
+                stage('Test Environment A') {
+                    steps {
+                        echo 'Running tests in Environment A...'
+                        // sh './run-tests-A.sh'
+                    }
+                }
+
+                stage('Test Environment B') {
+                    steps {
+                        echo 'Running tests in Environment B...'
+                        // sh './run-tests-B.sh'
+                    }
+                }
             }
         }
 
         stage('Deploy') {
-            agent any
             steps {
                 echo 'Deploying the application...'
-                sh 'mkdir -p /tmp/deploy && cp target/*.jar /tmp/deploy/'
+                // sh './deploy.sh'
             }
         }
     }
